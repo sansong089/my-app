@@ -1,8 +1,15 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  browserInstanceService: {
+    create: (data) => ipcRenderer.invoke('db:createBrowserInstance', data),
+    getAll: () => ipcRenderer.invoke('db:getBrowserInstances'),
+    update: (data) => ipcRenderer.invoke('db:updateBrowserInstance', data),
+    delete: (id) => ipcRenderer.invoke('db:deleteBrowserInstance', id)
+  }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

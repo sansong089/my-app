@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { PrismaClient } from '@prisma/client'
 
 function createWindow(): void {
   // Create the browser window.
@@ -38,7 +39,20 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+async function initDatabase(): Promise<void> {
+  try {
+    const prisma = new PrismaClient()
+    await prisma.$connect()
+    await prisma.$disconnect()
+  } catch {
+    console.log('Database not found, creating new database...')
+    // 使用prisma migrate命令初始化数据库
+    const { execSync } = await import('child_process')
+    execSync('npx prisma migrate dev --name init', { stdio: 'inherit' })
+  }
+}
+
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -49,8 +63,33 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
+  // Initialize Database
+  await initDatabase()
+
+  // Initialize Prisma Client
+  const prisma = new PrismaClient()
+
+  // IPC handlers
   ipcMain.on('ping', () => console.log('pong'))
+
+  ipcMain.handle('db:createBrowserInstance', async (_, data) => {
+    return await prisma.browserInstance.create({ data })
+  })
+
+  ipcMain.handle('db:getBrowserInstances', async () => {
+    return await prisma.browserInstance.findMany()
+  })
+
+  ipcMain.handle('db:updateBrowserInstance', async (_, { id, ...data }) => {
+    return await prisma.browserInstance.update({
+      where: { id },
+      data
+    })
+  })
+
+  ipcMain.handle('db:deleteBrowserInstance', async (_, id) => {
+    return await prisma.browserInstance.delete({ where: { id } })
+  })
 
   createWindow()
 
