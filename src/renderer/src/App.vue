@@ -1,26 +1,30 @@
-<script setup lang="ts">
-import Versions from './components/Versions.vue'
-
-const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
-</script>
-
 <template>
-  <img alt="logo" class="logo" src="./assets/electron.svg" />
-  <div class="creator">Powered by electron-vite</div>
-  <div class="text">
-    Build an Electron app with
-    <span class="vue">Vue</span>
-    and
-    <span class="ts">TypeScript</span>
-  </div>
-  <p class="tip">Please try pressing <code>F12</code> to open the devTool</p>
-  <div class="actions">
-    <div class="action">
-      <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">Documentation</a>
-    </div>
-    <div class="action">
-      <a target="_blank" rel="noreferrer" @click="ipcHandle">Send IPC</a>
-    </div>
-  </div>
-  <Versions />
+    <el-config-provider :size="size" :locale="locale" :z-index="3000">
+        <router-view />
+    </el-config-provider>
 </template>
+
+<script setup lang="ts">
+import useSettingsStore from '@/store/modules/settings';
+import { handleThemeStyle } from '@/utils/theme';
+import { nextTick, onMounted, computed } from 'vue';
+import useAppStore from '@/store/modules/app';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
+import en from 'element-plus/es/locale/lang/en';
+
+const size = computed(() => {
+    return useAppStore().size;
+});
+const lang = computed(() => {
+    return useAppStore().lang;
+});
+const locale = computed(() => (lang.value === 'zh-cn' ? zhCn : en));
+
+onMounted(() => {
+    nextTick(() => {
+        // 初始化主题样式
+        handleThemeStyle(useSettingsStore().theme);
+        document.getElementsByTagName('html')[0].classList.add('light');
+    });
+});
+</script>
