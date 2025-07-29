@@ -52,8 +52,10 @@
     "eslint-plugin-vue": "^10.3.0",
     "js-cookie": "^3.0.5",
     "prettier": "^3.6.2",
+    "sass-embedded": "^1.89.2",
     "typescript": "^5.8.3",
     "vite": "^7.0.5",
+    "vite-plugin-svg-icons": "^2.0.1",
     "vue": "^3.5.17",
     "vue-eslint-parser": "^10.2.0",
     "vue-tsc": "^3.0.3"

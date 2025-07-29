@@ -50,7 +50,6 @@ import DictTag from '@/components/DictTag/index.vue';
 import MyDialog from '@/components/Dialog/index.vue';
 import { Size } from './typings/store';
 import VueCropper from 'vue-cropper';
-import 'vue-cropper/dist/index.css';
 
 const app = createApp(App);
 

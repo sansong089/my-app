@@ -4,7 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PrismaClient } from '@prisma/client'
 import { BrowserService } from './services/BrowserService'
-import type { CreateBrowserInstanceDto, UpdateBrowserInstanceDto, BrowserQueryParams } from './typings/browser'
+import { registerBrowserIpc } from './ipc/browser'
 
 function createWindow(): void {
   // Create the browser window.
@@ -71,32 +71,13 @@ app.whenReady().then(async () => {
   // Initialize Database
   await initDatabase()
 
-  // Initialize Prisma Client and Services
+  // Initialize services
   const prisma = new PrismaClient()
   const browserService = new BrowserService(prisma)
 
-  // IPC handlers
+  // Register IPC handlers
+  registerBrowserIpc(browserService)
   ipcMain.on('ping', () => console.log('pong'))
-
-  ipcMain.handle('db:createBrowserInstance', async (_, data: CreateBrowserInstanceDto) => {
-    return await browserService.createBrowserInstance(data)
-  })
-
-  ipcMain.handle('db:getBrowserInstances', async () => {
-    return await browserService.getBrowserInstances()
-  })
-
-  ipcMain.handle('db:updateBrowserInstance', async (_, data: UpdateBrowserInstanceDto) => {
-    return await browserService.updateBrowserInstance(data)
-  })
-
-  ipcMain.handle('db:deleteBrowserInstance', async (_, id: number) => {
-    return await browserService.deleteBrowserInstance(id)
-  })
-
-  ipcMain.handle('db:getBrowserInstancesByPage', async (_, { pageNum, pageSize, queryParams }: { pageNum: number, pageSize: number, queryParams?: BrowserQueryParams }) => {
-    return await browserService.getBrowserInstancesByPage(pageNum, pageSize, queryParams)
-  })
 
   createWindow()
 

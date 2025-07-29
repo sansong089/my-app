@@ -1,20 +1,22 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { CreateBrowserInstanceDto, UpdateBrowserInstanceDto, BrowserQueryParams } from '../main/typings/browser'
+import type { PageParams, PageResult } from '../types/page'
+import type { BrowserQuery, BrowserCreateDTO, BrowserUpdateDTO, BrowserVO } from '../types/browser'
+import type { ApiResponse } from '../types/api'
 
 // Custom APIs for renderer
 const api = {
-  browserInstanceService: {
-    createBrowserInstance: (data: CreateBrowserInstanceDto) => ipcRenderer.invoke('db:createBrowserInstance', data),
-    getBrowserInstances: () => ipcRenderer.invoke('db:getBrowserInstances'),
-    getBrowserInstance: (id: number) => ipcRenderer.invoke('db:getBrowserInstance', id),
-    updateBrowserInstance: (data: UpdateBrowserInstanceDto) => ipcRenderer.invoke('db:updateBrowserInstance', data),
-    deleteBrowserInstance: (id: number) => ipcRenderer.invoke('db:deleteBrowserInstance', id),
-    getBrowserInstancesByPage: (
-      pageNum: number,
-      pageSize: number,
-      queryParams?: BrowserQueryParams
-    ) => ipcRenderer.invoke('db:getBrowserInstancesByPage', { pageNum, pageSize, queryParams })
+  browser: {
+    list: (page: PageParams, query?: BrowserQuery): Promise<ApiResponse<PageResult<BrowserVO>>> =>
+      ipcRenderer.invoke('browser:list', page, query),
+    getById: (id: number): Promise<ApiResponse<BrowserVO>> =>
+      ipcRenderer.invoke('browser:getById', id),
+    create: (data: BrowserCreateDTO): Promise<ApiResponse<BrowserVO>> =>
+      ipcRenderer.invoke('browser:create', data),
+    update: (data: BrowserUpdateDTO): Promise<ApiResponse<BrowserVO>> =>
+      ipcRenderer.invoke('browser:update', data),
+    delete: (id: number): Promise<ApiResponse<void>> =>
+      ipcRenderer.invoke('browser:delete', id)
   }
 }
 

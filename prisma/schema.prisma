@@ -12,9 +12,9 @@ datasource db {
 
 model BrowserInstance {
   id        Int      @id @default(autoincrement())
-  group_id  Int
+  groupId   Int      @map("group_id")
   label     String
   remark    String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }

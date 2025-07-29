@@ -101,16 +101,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import type { FormInstance } from 'element-plus'
-import {
-  listBrowser,
-  getBrowser,
-  delBrowser,
-  addBrowser,
-  updateBrowser
-} from '@/api/system/browser'
-import type { BrowserInstance } from '@/typings/browser'
-import type { CreateBrowserInstanceDto, UpdateBrowserInstanceDto } from '@/../../preload/index.d'
+import { listBrowser, getBrowser, addBrowser, updateBrowser, delBrowser } from '@/api/browser'
 
 export default defineComponent({
   name: 'Browser',
@@ -129,7 +120,7 @@ export default defineComponent({
       // 总条数
       total: 0,
       // 浏览器实例表格数据
-      browserList: [] as BrowserInstance[],
+      browserList: [] as Array<{ id: number; groupId: number; label: string; remark?: string }>,
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -162,11 +153,25 @@ export default defineComponent({
     /** 查询浏览器实例列表 */
     getList() {
       this.loading = true
-      listBrowser(this.queryParams).then((response) => {
-        this.browserList = response.data?.rows || []
-        this.total = response.data?.total || 0
-        this.loading = false
-      })
+      const page = {
+        pageNum: this.queryParams.pageNum,
+        pageSize: this.queryParams.pageSize
+      }
+      const query = {
+        groupId: this.queryParams.groupId,
+        label: this.queryParams.label
+      }
+      listBrowser(page, query)
+        .then((response) => {
+          this.browserList = response.rows
+          this.total = response.total
+          this.loading = false
+        })
+        .catch((error) => {
+          console.error('查询失败:', error)
+          this.$modal.msgError(error.message || '查询失败')
+          this.loading = false
+        })
     },
     // 取消按钮
     cancel() {
@@ -202,7 +207,7 @@ export default defineComponent({
       this.handleQuery()
     },
     // 多选框选中数据
-    handleSelectionChange(selection: BrowserInstance[]) {
+    handleSelectionChange(selection) {
       this.ids = selection.map((item) => item.id)
       this.single = selection.length !== 1
       this.multiple = !selection.length
@@ -214,31 +219,39 @@ export default defineComponent({
       this.title = '添加浏览器实例'
     },
     /** 修改按钮操作 */
-    handleUpdate(row: BrowserInstance) {
+    handleUpdate(row) {
       this.reset()
       const id = row.id || this.ids[0]
       if (id) {
-        getBrowser(id).then((response) => {
-          if (response.data) {
-            this.form = { ...response.data }
+        getBrowser(id)
+          .then((response) => {
+            this.form = {
+              id: response.id,
+              groupId: response.groupId,
+              label: response.label,
+              remark: response.remark ?? null
+            }
             this.open = true
             this.title = '修改浏览器实例'
-          }
-        })
+          })
+          .catch((error) => {
+            console.error('查询失败:', error)
+            this.$modal.msgError(error.message || '查询失败')
+          })
       }
     },
     /** 提交按钮 */
     submitForm() {
-      const browserRef = this.$refs.browserRef as FormInstance
+      const browserRef = this.$refs.browserRef
       browserRef.validate((valid: boolean) => {
         if (valid) {
           // 确保必要的字段不为null
           if (this.form.groupId !== null && this.form.label !== null) {
             if (this.form.id != null) {
-              const updateData: UpdateBrowserInstanceDto = {
+              const updateData = {
                 id: this.form.id,
-                groupId: this.form.groupId,
-                label: this.form.label,
+                groupId: this.form.groupId!,
+                label: this.form.label!,
                 remark: this.form.remark !== null ? this.form.remark : undefined
               }
               updateBrowser(updateData)
@@ -252,9 +265,9 @@ export default defineComponent({
                   this.$modal.msgError(error.message || '修改失败')
                 })
             } else {
-              const createData: CreateBrowserInstanceDto = {
-                groupId: this.form.groupId,
-                label: this.form.label,
+              const createData = {
+                groupId: Number(this.form.groupId!),
+                label: this.form.label!,
                 remark: this.form.remark !== null ? this.form.remark : undefined
               }
               addBrowser(createData)
@@ -273,7 +286,7 @@ export default defineComponent({
       })
     },
     /** 删除按钮操作 */
-    handleDelete(row: BrowserInstance) {
+    handleDelete(row) {
       const ids = row.id || this.ids[0]
       this.$modal
         .confirm('是否确认删除浏览器实例编号为"' + ids + '"的数据项？')
