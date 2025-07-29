@@ -1,13 +1,20 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import type { CreateBrowserInstanceDto, UpdateBrowserInstanceDto, BrowserQueryParams } from '../main/typings/browser'
 
 // Custom APIs for renderer
 const api = {
   browserInstanceService: {
-    create: (data) => ipcRenderer.invoke('db:createBrowserInstance', data),
-    getAll: () => ipcRenderer.invoke('db:getBrowserInstances'),
-    update: (data) => ipcRenderer.invoke('db:updateBrowserInstance', data),
-    delete: (id) => ipcRenderer.invoke('db:deleteBrowserInstance', id)
+    createBrowserInstance: (data: CreateBrowserInstanceDto) => ipcRenderer.invoke('db:createBrowserInstance', data),
+    getBrowserInstances: () => ipcRenderer.invoke('db:getBrowserInstances'),
+    getBrowserInstance: (id: number) => ipcRenderer.invoke('db:getBrowserInstance', id),
+    updateBrowserInstance: (data: UpdateBrowserInstanceDto) => ipcRenderer.invoke('db:updateBrowserInstance', data),
+    deleteBrowserInstance: (id: number) => ipcRenderer.invoke('db:deleteBrowserInstance', id),
+    getBrowserInstancesByPage: (
+      pageNum: number,
+      pageSize: number,
+      queryParams?: BrowserQueryParams
+    ) => ipcRenderer.invoke('db:getBrowserInstancesByPage', { pageNum, pageSize, queryParams })
   }
 }
 

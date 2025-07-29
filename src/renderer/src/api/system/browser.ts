@@ -1,55 +1,37 @@
-import type { BrowserInstance } from '@/typings/browser'
+import type {
+  BrowserInstance,
+  ApiResponse,
+  PageResult,
+  CreateBrowserInstanceDto,
+  UpdateBrowserInstanceDto,
+  BrowserQueryParams
+} from '@/../../preload/index.d'
 
-export function listBrowser(params: {
+export interface ListBrowserParams extends BrowserQueryParams {
   pageNum?: number
   pageSize?: number
-  groupId?: string | null
-  label?: string | null
-}): Promise<{data: {rows: BrowserInstance[], total: number}}> {
-  return window.api.browserInstanceService.getAll().then(res => {
-    // 实现分页逻辑
-    const { pageNum = 1, pageSize = 10, ...query } = params
-    const filtered = res.filter(item => {
-      return Object.entries(query).every(([key, value]) => {
-        if (!value) return true
-        return String(item[key]).includes(String(value))
-      })
-    })
-
-    const start = (pageNum - 1) * pageSize
-    const end = start + pageSize
-    return {
-      data: {
-        rows: filtered.slice(start, end),
-        total: filtered.length
-      }
-    }
-  })
 }
 
-export function getBrowser(id: number): Promise<{data: BrowserInstance | null}> {
-  return window.api.browserInstanceService.get(id).then(data => {
-    return { data }
-  })
+export function listBrowser(params: ListBrowserParams): Promise<ApiResponse<PageResult<BrowserInstance>>> {
+  const { pageNum = 1, pageSize = 10, groupId, label } = params
+  const query: BrowserQueryParams = {}
+  if (groupId !== undefined && groupId !== null) query.groupId = groupId
+  if (label !== undefined && label !== null) query.label = label
+  return window.api.browserInstanceService.getBrowserInstancesByPage(pageNum, pageSize, query)
 }
 
-export function delBrowser(id: number): Promise<BrowserInstance> {
-  return window.api.browserInstanceService.delete(id)
+export function getBrowser(id: number): Promise<ApiResponse<BrowserInstance | null>> {
+  return window.api.browserInstanceService.getBrowserInstance(id)
 }
 
-export function addBrowser(data: {
-  group_id: number
-  label: string
-  remark?: string | null
-}): Promise<BrowserInstance> {
-  return window.api.browserInstanceService.create(data)
+export function delBrowser(id: number): Promise<ApiResponse<BrowserInstance>> {
+  return window.api.browserInstanceService.deleteBrowserInstance(id)
 }
 
-export function updateBrowser(data: {
-  id: number
-  group_id: number
-  label: string
-  remark?: string | null
-}): Promise<BrowserInstance> {
-  return window.api.browserInstanceService.update(data)
+export function addBrowser(data: CreateBrowserInstanceDto): Promise<ApiResponse<BrowserInstance>> {
+  return window.api.browserInstanceService.createBrowserInstance(data)
+}
+
+export function updateBrowser(data: UpdateBrowserInstanceDto): Promise<ApiResponse<BrowserInstance>> {
+  return window.api.browserInstanceService.updateBrowserInstance(data)
 }
