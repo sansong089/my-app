@@ -4,7 +4,8 @@
     "src/renderer/src/env.d.ts",
     "src/renderer/src/types/electron.d.ts",
     "src/renderer/src/**/*",
-    "src/renderer/src/**/*.vue"
+    "src/renderer/src/**/*.vue",
+    "src/types/**/*"
   ],
   "compilerOptions": {
     "composite": true,

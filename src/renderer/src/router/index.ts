@@ -1,6 +1,6 @@
-import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router';
+import { createWebHistory, createRouter, RouteRecordRaw } from 'vue-router'
 /* Layout */
-import Layout from '@/layout/index.vue';
+import Layout from '@/layout/index.vue'
 
 /**
  * Note: 路由配置项
@@ -24,66 +24,72 @@ import Layout from '@/layout/index.vue';
   }
  */
 declare module 'vue-router' {
-    interface RouteMeta {
-        hidden?: boolean;
-        title?: string;
-        icon?: string;
-        elSvgIcon?: string;
-        permissions?: string[];
-    }
-    interface _RouteRecordBase {
-        hidden?: boolean;
-        parentPath?: string;
-        permissions?: string[];
-    }
-    interface _RouteLocationBase {
-        title?: string;
-    }
+  interface RouteMeta {
+    hidden?: boolean
+    title?: string
+    icon?: string
+    elSvgIcon?: string
+    permissions?: string[]
+  }
+  interface _RouteRecordBase {
+    hidden?: boolean
+    parentPath?: string
+    permissions?: string[]
+  }
+  interface _RouteLocationBase {
+    title?: string
+  }
 }
 
 // 公共路由
 export const constantRoutes: RouteRecordRaw[] = [
-    {
-        path: '',
-        redirect: '/system/browser'
-    },
-    {
-        name: "System",
-        path: "/system",
-        hidden: false,
-        redirect: "noRedirect",
-        component: Layout,
+  {
+    path: '',
+    redirect: '/system/browser'
+  },
+  {
+    name: 'System',
+    path: '/system',
+    hidden: false,
+    redirect: 'noRedirect',
+    component: Layout,
 
-        meta: {
-            title: "系统管理",
-            icon: "system",
-            noCache: false,
-            link: null
-        },
-        children: [
-            {
-                path: 'browser',
-                component: () => import('@/views/system/browser/index.vue'),
-                name: 'browser',
-                meta: { title: '浏览器', icon: 'user' },
-            },
-        ]
-    }
-];
+    meta: {
+      title: '系统管理',
+      icon: 'system',
+      noCache: false,
+      link: null
+    },
+    children: [
+      {
+        path: 'browser',
+        component: () => import('@/views/system/browser/index.vue'),
+        name: 'browser',
+        meta: { title: '浏览器', icon: 'user' }
+      },
+      {
+        path: 'settings',
+        component: () => import('@/views/system/settings/index.vue'),
+        name: 'settings',
+        meta: { title: '系统设置', icon: 'user' }
+      }
+    ]
+  }
+]
 
 // 动态路由，基于用户权限动态去加载
-export const dynamicRoutes: RouteRecordRaw[] = [];
+export const dynamicRoutes: RouteRecordRaw[] = []
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes: constantRoutes,
-    scrollBehavior(to, from, savedPosition) {
-        if (savedPosition) {
-            return savedPosition;
-        } else {
-            return { top: 0 };
-        }
-    },
-});
+  history: createWebHistory(),
+  routes: constantRoutes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
+})
 
-export default router;
+export default router

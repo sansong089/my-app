@@ -1,10 +1,13 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { PrismaClient } from '@prisma/client'
 import { BrowserService } from './services/BrowserService'
+import { SystemSettingsService } from './services/SystemSettingsService'
 import { registerBrowserIpc } from './ipc/browser'
+import { registerSystemSettingsIpc } from './ipc/systemSettings'
+import { registerDialogIpc } from './ipc/dialog'
 
 function createWindow(): void {
   // Create the browser window.
@@ -74,9 +77,12 @@ app.whenReady().then(async () => {
   // Initialize services
   const prisma = new PrismaClient()
   const browserService = new BrowserService(prisma)
+  const systemSettingsService = new SystemSettingsService(prisma)
 
   // Register IPC handlers
   registerBrowserIpc(browserService)
+  registerSystemSettingsIpc(systemSettingsService)
+  registerDialogIpc()
   ipcMain.on('ping', () => console.log('pong'))
 
   createWindow()

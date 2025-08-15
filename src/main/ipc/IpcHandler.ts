@@ -10,8 +10,11 @@ export class IpcHandler {
    */
   static handle<T extends (...args: any[]) => Promise<any>>(channel: string, handler: T): void {
     ipcMain.handle(channel, async (_, ...args: Parameters<T>) => {
+      console.log(`IPC调用开始 [${channel}], 参数:`, args)
       try {
-        return await handler(...args)
+        const result = await handler(...args)
+        console.log(`IPC调用成功 [${channel}], 结果:`, result)
+        return result
       } catch (error) {
         console.error(`IPC调用失败 [${channel}]:`, error)
         return {

@@ -11,10 +11,32 @@ interface BrowserApi {
   delete: (id: number) => Promise<ApiResponse<void>>
 }
 
+interface SystemSettingsApi {
+  getAll: () => Promise<ApiResponse<Record<string, string>>>
+  get: (data: string) => Promise<ApiResponse<string | null>>
+  set: (varName: string, value: string) => Promise<ApiResponse<void>>
+  mset: (data: Record<string, string>) => Promise<ApiResponse<void>>
+}
+
+interface DialogApi {
+  selectFile: (options?: {
+    defaultPath?: string
+    filters?: Array<{
+      name: string
+      extensions: string[]
+    }>
+  }) => Promise<string | null>
+  selectFolder: (options?: {
+    defaultPath?: string
+  }) => Promise<string | null>
+}
+
 declare global {
   interface Window {
     api: {
       browser: BrowserApi
+      systemSettings: SystemSettingsApi
+      dialog: DialogApi
     }
   }
 }

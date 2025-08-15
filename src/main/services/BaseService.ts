@@ -19,7 +19,7 @@ export class BaseService {
   /**
    * 成功响应（无数据）
    */
-  protected successNoData(message = '操作成功'): ApiResponse<void> {
+  protected successNoData<T = unknown>(message = '操作成功'): ApiResponse<T> {
     return {
       code: 200,
       message
@@ -29,7 +29,7 @@ export class BaseService {
   /**
    * 错误响应
    */
-  protected error(message = '操作失败', code = 500): ApiResponse<never> {
+  protected error<T = unknown>(message = '操作失败', code = 500): ApiResponse<T> {
     return {
       code,
       message
@@ -39,7 +39,7 @@ export class BaseService {
   /**
    * 404错误响应
    */
-  protected notFound(message = '资源不存在'): ApiResponse<never> {
+  protected notFound<T = unknown>(message = '资源不存在'): ApiResponse<T> {
     return {
       code: 404,
       message
@@ -49,10 +49,12 @@ export class BaseService {
   /**
    * 处理Prisma错误
    */
-  protected handlePrismaError(error: unknown): ApiResponse<never> {
+  protected handlePrismaError<T = unknown>(error: unknown): ApiResponse<T> {
     if (error instanceof Error) {
-      if (error.message.includes('Record to update not found') ||
-          error.message.includes('Record to delete does not exist')) {
+      if (
+        error.message.includes('Record to update not found') ||
+        error.message.includes('Record to delete does not exist')
+      ) {
         return this.notFound('资源不存在')
       }
       return this.error(error.message)
@@ -76,7 +78,7 @@ export class BaseService {
    * 执行可能返回空值的服务方法
    */
   protected async executeWithNullCheck<T>(
-    fn: () => Promise<T | null>,
+    fn: () => Promise<T>,
     notFoundMessage = '资源不存在'
   ): Promise<ApiResponse<T>> {
     try {

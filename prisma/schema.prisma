@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,4 +14,13 @@ model BrowserInstance {
   remark    String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("browser_instance")
+}
+
+model SystemSettings {
+  varName String  @id @map("var_name")
+  value   String?
+
+  @@map("system_settings")
 }
