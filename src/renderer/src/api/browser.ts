@@ -59,6 +59,17 @@ export function updateBrowser(data: {
 export function delBrowser(id: number): Promise<void> {
   return window.api.browser.delete(id).then((res) => {
     if (res.code !== 200) throw new Error(res.message)
-    return res.data
+  })
+}
+
+export function startBrowser(id: number): Promise<void> {
+  return window.api.browser.start(id).then((res) => {
+    if (res.code !== 200) throw new Error(res.message)
+  })
+}
+
+export function stopBrowser(id: number): Promise<void> {
+  return window.api.browser.stop(id).then((res) => {
+    if (res.code !== 200) throw new Error(res.message)
   })
 }

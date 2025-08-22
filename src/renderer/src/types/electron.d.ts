@@ -9,6 +9,8 @@ interface BrowserApi {
   create: (data: BrowserCreateDTO) => Promise<ApiResponse<BrowserVO>>
   update: (data: BrowserUpdateDTO) => Promise<ApiResponse<BrowserVO>>
   delete: (id: number) => Promise<ApiResponse<void>>
+  start: (id: number) => Promise<ApiResponse<void>>
+  stop: (id: number) => Promise<ApiResponse<void>>
 }
 
 interface SystemSettingsApi {

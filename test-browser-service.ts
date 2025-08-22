@@ -38,6 +38,32 @@ async function testBrowserService() {
       })
       console.log('更新结果:', updateResult)
 
+      // 测试启动浏览器（需要先配置Chrome路径和用户数据目录）
+      console.log('\n测试启动浏览器...')
+      try {
+        const startResult = await browserService.start(id)
+        console.log('启动结果:', startResult)
+
+        // 测试检查浏览器是否运行
+        if (startResult.code === 200) {
+          console.log('\n测试检查浏览器是否运行...')
+          const isRunningResult = await browserService.isRunning(id)
+          console.log('运行状态:', isRunningResult)
+
+          // 测试获取所有运行中的浏览器
+          console.log('\n测试获取所有运行中的浏览器...')
+          const runningBrowsersResult = await browserService.getRunningBrowsers()
+          console.log('运行中的浏览器:', runningBrowsersResult)
+
+          // 测试停止浏览器
+          console.log('\n测试停止浏览器...')
+          const stopResult = await browserService.stop(id)
+          console.log('停止结果:', stopResult)
+        }
+      } catch (error) {
+        console.log('启动浏览器失败（可能需要先配置Chrome路径和用户数据目录）:', error.message)
+      }
+
       // 测试删除
       console.log('\n测试删除...')
       const deleteResult = await browserService.delete(id)

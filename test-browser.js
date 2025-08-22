@@ -6,7 +6,8 @@ async function main() {
     data: {
       group_id: 1,
       label: '测试浏览器',
-      remark: '这是一个测试浏览器实例'
+      remark: '这是一个测试浏览器实例',
+      status: 'stopped' // 添加默认状态
     }
   });
   console.log('Created browser:', browser);

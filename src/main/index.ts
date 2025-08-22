@@ -79,6 +79,14 @@ app.whenReady().then(async () => {
   const browserService = new BrowserService(prisma)
   const systemSettingsService = new SystemSettingsService(prisma)
 
+  // Sync all browser status to stopped on startup
+  try {
+    await browserService.syncAllBrowserStatus()
+    console.log('All browser instances status synced to stopped')
+  } catch (error) {
+    console.error('Failed to sync browser instances status:', error)
+  }
+
   // Register IPC handlers
   registerBrowserIpc(browserService)
   registerSystemSettingsIpc(systemSettingsService)

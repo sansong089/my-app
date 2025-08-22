@@ -9,6 +9,8 @@ export function registerBrowserIpc(service: BrowserService): void {
     'browser:getById': (id: number) => service.getById(id),
     'browser:create': (data: BrowserCreateDTO) => service.create(data),
     'browser:update': (data: BrowserUpdateDTO) => service.update(data),
-    'browser:delete': (id: number) => service.delete(id)
+    'browser:delete': (id:number) => service.delete(id),
+    'browser:start': (id: number) => service.start(id),
+    'browser:stop': (id: number) => service.stop(id)
   })
 }

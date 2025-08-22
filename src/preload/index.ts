@@ -15,7 +15,9 @@ const api = {
       ipcRenderer.invoke('browser:create', data),
     update: (data: BrowserUpdateDTO): Promise<ApiResponse<BrowserVO>> =>
       ipcRenderer.invoke('browser:update', data),
-    delete: (id: number): Promise<ApiResponse<void>> => ipcRenderer.invoke('browser:delete', id)
+    delete: (id: number): Promise<ApiResponse<void>> => ipcRenderer.invoke('browser:delete', id),
+    start: (id: number): Promise<ApiResponse<void>> => ipcRenderer.invoke('browser:start', id),
+    stop: (id: number): Promise<ApiResponse<void>> => ipcRenderer.invoke('browser:stop', id)
   },
   systemSettings: {
     getAll: (): Promise<ApiResponse<Record<string, string>>> =>

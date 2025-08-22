@@ -12,6 +12,8 @@ model BrowserInstance {
   groupId   Int      @map("group_id")
   label     String
   remark    String?
+  pid       Int?     @map("pid") // 进程ID
+  status    String   @default("stopped") @map("status") // 浏览器状态: stopped, running
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

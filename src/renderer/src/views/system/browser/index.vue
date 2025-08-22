@@ -39,6 +39,26 @@
           >删除</el-button
         >
       </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          icon="VideoPlay"
+          :disabled="batchStartDisabled"
+          @click="handleBatchStart"
+          >批量启动</el-button
+        >
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          plain
+          icon="Close"
+          :disabled="batchStopDisabled"
+          @click="handleBatchStop"
+          >批量停止</el-button
+        >
+      </el-col>
       <right-toolbar v-model:show-search="showSearch" @query-table="getList"></right-toolbar>
     </el-row>
 
@@ -48,8 +68,31 @@
       <el-table-column label="分组id" align="center" prop="groupId" />
       <el-table-column label="标签" align="center" prop="label" />
       <el-table-column label="备注" align="center" prop="remark" />
+      <el-table-column label="状态" align="center" prop="status" width="80">
+        <template #default="scope">
+          <el-tag :type="scope.row.status === 'running' ? 'success' : 'info'">
+            {{ scope.row.status === 'running' ? '运行中' : '已停止' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template #default="scope">
+          <el-button
+            v-if="scope.row.status !== 'running'"
+            link
+            type="success"
+            icon="VideoPlay"
+            @click="handleStart(scope.row)"
+            >启动</el-button
+          >
+          <el-button
+            v-if="scope.row.status === 'running'"
+            link
+            type="danger"
+            icon="Close"
+            @click="handleStop(scope.row)"
+            >停止</el-button
+          >
           <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
             >修改</el-button
           >
@@ -101,7 +144,15 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { listBrowser, getBrowser, addBrowser, updateBrowser, delBrowser } from '@/api/browser'
+import {
+  listBrowser,
+  getBrowser,
+  addBrowser,
+  updateBrowser,
+  delBrowser,
+  startBrowser,
+  stopBrowser
+} from '@/api/browser'
 
 export default defineComponent({
   name: 'Browser',
@@ -120,7 +171,13 @@ export default defineComponent({
       // 总条数
       total: 0,
       // 浏览器实例表格数据
-      browserList: [] as Array<{ id: number; groupId: number; label: string; remark?: string }>,
+      browserList: [] as Array<{
+        id: number
+        groupId: number
+        label: string
+        remark?: string
+        status: 'stopped' | 'running'
+      }>,
       // 弹出层标题
       title: '',
       // 是否显示弹出层
@@ -144,6 +201,35 @@ export default defineComponent({
         groupId: [{ required: true, message: '分组id不能为空', trigger: 'blur' }],
         label: [{ required: true, message: '标签不能为空', trigger: 'blur' }]
       }
+    }
+  },
+  computed: {
+    // 批量启动按钮是否禁用
+    batchStartDisabled() {
+      // 没有选择任何项时禁用
+      if (this.multiple) {
+        return true
+      }
+
+      // 获取所有选中项的状态
+      const selectedItems = this.browserList.filter(item => this.ids.includes(item.id))
+
+      // 如果所有选中项都是运行状态，则禁用批量启动按钮
+      return selectedItems.every(item => item.status === 'running')
+    },
+
+    // 批量停止按钮是否禁用
+    batchStopDisabled() {
+      // 没有选择任何项时禁用
+      if (this.multiple) {
+        return true
+      }
+
+      // 获取所有选中项的状态
+      const selectedItems = this.browserList.filter(item => this.ids.includes(item.id))
+
+      // 如果所有选中项都是停止状态，则禁用批量停止按钮
+      return selectedItems.every(item => item.status === 'stopped')
     }
   },
   created() {
@@ -242,7 +328,7 @@ export default defineComponent({
     },
     /** 提交按钮 */
     submitForm() {
-      const browserRef = this.$refs.browserRef
+      const browserRef = this.$refs.browserRef as any
       browserRef.validate((valid: boolean) => {
         if (valid) {
           // 确保必要的字段不为null
@@ -299,6 +385,101 @@ export default defineComponent({
         })
         .catch(() => {})
     },
+
+    /** 启动按钮操作 */
+    handleStart(row) {
+      const id = row.id
+      this.$modal
+        .confirm('是否确认启动浏览器实例编号为"' + id + '"？')
+        .then(() => {
+          return startBrowser(id)
+        })
+        .then(() => {
+          this.$modal.msgSuccess('启动成功')
+          row.status = 'running'
+        })
+        .catch((error) => {
+          console.error('启动失败:', error)
+          this.$modal.msgError(error.message || '启动失败')
+        })
+    },
+
+    /** 停止按钮操作 */
+    handleStop(row) {
+      const id = row.id
+      this.$modal
+        .confirm('是否确认停止浏览器实例编号为"' + id + '"？')
+        .then(() => {
+          return stopBrowser(id)
+        })
+        .then(() => {
+          this.$modal.msgSuccess('停止成功')
+          row.status = 'stopped'
+        })
+        .catch((error) => {
+          console.error('停止失败:', error)
+          this.$modal.msgError(error.message || '停止失败')
+        })
+    },
+
+    /** 批量启动按钮操作 */
+    handleBatchStart() {
+      if (this.ids.length === 0) {
+        this.$modal.msgError('请选择至少一个浏览器实例')
+        return
+      }
+
+      this.$modal
+        .confirm('是否确认启动选中的' + this.ids.length + '个浏览器实例？')
+        .then(() => {
+          // 创建一个Promise数组，每个元素代表一个启动操作
+          const promises = this.ids.map((id) => startBrowser(id))
+
+          // 使用Promise.all等待所有启动操作完成
+          return Promise.all(promises)
+        })
+        .then(() => {
+          this.$modal.msgSuccess('批量启动成功')
+          // 刷新列表
+          this.getList()
+        })
+        .catch((error) => {
+          console.error('批量启动失败:', error)
+          this.$modal.msgError(error.message || '批量启动失败')
+          // 即使部分失败也刷新列表以更新状态
+          this.getList()
+        })
+    },
+
+    /** 批量停止按钮操作 */
+    handleBatchStop() {
+      if (this.ids.length === 0) {
+        this.$modal.msgError('请选择至少一个浏览器实例')
+        return
+      }
+
+      this.$modal
+        .confirm('是否确认停止选中的' + this.ids.length + '个浏览器实例？')
+        .then(() => {
+          // 创建一个Promise数组，每个元素代表一个停止操作
+          const promises = this.ids.map((id) => stopBrowser(id))
+
+          // 使用Promise.all等待所有停止操作完成
+          return Promise.all(promises)
+        })
+        .then(() => {
+          this.$modal.msgSuccess('批量停止成功')
+          // 刷新列表
+          this.getList()
+        })
+        .catch((error) => {
+          console.error('批量停止失败:', error)
+          this.$modal.msgError(error.message || '批量停止失败')
+          // 即使部分失败也刷新列表以更新状态
+          this.getList()
+        })
+    },
+
     /** 导出按钮操作 */
     handleExport() {
       // @ts-ignore: download method from mixin
